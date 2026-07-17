@@ -17,12 +17,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from fastapi.responses import JSONResponse
+import traceback
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc), "traceback": traceback.format_exc()}
+    )
+
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(goals.router, prefix="/goals", tags=["goals"])
 app.include_router(activities.router, prefix="/activities", tags=["activities"])
 app.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
 app.include_router(ai.router, prefix="/ai", tags=["ai"])
-from api import gamification
 app.include_router(gamification.router, prefix="/gamification", tags=["gamification"])
 app.include_router(leaderboard.router, prefix="/leaderboard", tags=["leaderboard"])
 
