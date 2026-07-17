@@ -31,7 +31,7 @@ MarkupSafe==3.0.3
 passlib==1.7.4
 proto-plus==1.28.1
 protobuf==5.29.6
-psycopg2-binary==2.9.9
+pg8000==1.31.2
 pyasn1==0.6.4
 pyasn1_modules==0.4.2
 pycparser==3.0
