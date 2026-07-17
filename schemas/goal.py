@@ -18,6 +18,7 @@ class GoalResponse(GoalBase):
     id: int
     user_id: int
     start_date: datetime
+    current_progress: int = 0
 
     class Config:
         from_attributes = True
