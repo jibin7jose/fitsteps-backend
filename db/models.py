@@ -13,9 +13,14 @@ class User(Base):
     role = Column(String, default="USER")
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    current_streak = Column(Integer, default=0)
+    longest_streak = Column(Integer, default=0)
+    last_active_date = Column(DateTime, nullable=True)
+
     goals = relationship("Goal", back_populates="owner", cascade="all, delete-orphan")
     activities = relationship("Activity", back_populates="owner", cascade="all, delete-orphan")
     ai_recommendations = relationship("AIRecommendation", back_populates="owner", cascade="all, delete-orphan")
+    badges = relationship("UserBadge", back_populates="user", cascade="all, delete-orphan")
 
 class Goal(Base):
     __tablename__ = "goals"
@@ -55,3 +60,25 @@ class AIRecommendation(Base):
     generated_at = Column(DateTime, default=datetime.utcnow)
 
     owner = relationship("User", back_populates="ai_recommendations")
+
+class Badge(Base):
+    __tablename__ = "badges"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    description = Column(String)
+    icon_url = Column(String, nullable=True)
+    
+    user_badges = relationship("UserBadge", back_populates="badge")
+
+class UserBadge(Base):
+    __tablename__ = "user_badges"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    badge_id = Column(Integer, ForeignKey("badges.id"))
+    earned_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="badges")
+    badge = relationship("Badge", back_populates="user_badges")
+

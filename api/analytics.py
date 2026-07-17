@@ -36,10 +36,48 @@ def get_analytics(db: Session = Depends(get_db), current_user: models.User = Dep
     best_day_steps = best_day.total_steps if best_day else 0
     best_day_date = best_day.date if best_day else None
     
+    # Goal Completion Rate (Today)
+    goal = db.query(models.Goal).filter(
+        models.Goal.user_id == current_user.id,
+        models.Goal.goal_type == 'daily_steps'
+    ).first()
+    
+    goal_completion_rate = 0
+    if goal and goal.target > 0:
+        target = goal.target
+        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        today_activities = db.query(models.Activity).filter(
+            models.Activity.user_id == current_user.id,
+            models.Activity.activity_date >= today_start
+        ).all()
+        
+        today_steps = sum(a.steps for a in today_activities)
+        goal_completion_rate = min(100, round((today_steps / target) * 100))
+        
+    # Calculate best week (max steps)
+    best_week = db.query(
+        func.date_trunc('week', models.Activity.activity_date).label('week'),
+        func.sum(models.Activity.steps).label('total_steps')
+    ).filter(
+        models.Activity.user_id == current_user.id
+    ).group_by(
+        func.date_trunc('week', models.Activity.activity_date)
+    ).order_by(
+        func.sum(models.Activity.steps).desc()
+    ).first()
+    
+    best_week_steps = best_week.total_steps if best_week else 0
+    best_week_date = best_week.week if best_week else None
+        
     return {
         "weekly_step_average": round(weekly_average, 2),
         "best_day": {
             "date": best_day_date,
             "steps": best_day_steps
-        }
+        },
+        "best_week": {
+            "date": best_week_date,
+            "steps": best_week_steps
+        },
+        "goal_completion_rate": goal_completion_rate
     }

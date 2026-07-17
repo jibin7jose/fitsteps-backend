@@ -10,6 +10,10 @@ class GoalBase(BaseModel):
 class GoalCreate(GoalBase):
     pass
 
+class GoalUpdate(BaseModel):
+    target: Optional[int] = None
+    frequency: Optional[str] = None
+
 class GoalResponse(GoalBase):
     id: int
     user_id: int
