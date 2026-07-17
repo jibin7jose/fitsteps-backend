@@ -5,6 +5,8 @@ from db.database import get_db
 from db import models
 from schemas import goal as goal_schema
 from api.dependencies import get_current_user
+from datetime import datetime, timedelta
+from sqlalchemy import func
 
 router = APIRouter()
 
@@ -31,7 +33,43 @@ def create_goal(goal: goal_schema.GoalCreate, db: Session = Depends(get_db), cur
 @router.get("/", response_model=List[goal_schema.GoalResponse])
 def get_goals(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     goals = db.query(models.Goal).filter(models.Goal.user_id == current_user.id).all()
-    return goals
+    
+    response = []
+    for goal in goals:
+        # Calculate progress
+        start_date = None
+        now = datetime.utcnow()
+        if goal.frequency == 'daily':
+            start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        elif goal.frequency == 'weekly':
+            # Start of current week (Monday)
+            start_date = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+            
+        progress = 0
+        if start_date:
+            query = db.query(models.Activity).filter(
+                models.Activity.user_id == current_user.id,
+                models.Activity.activity_date >= start_date
+            )
+            activities = query.all()
+            
+            if goal.goal_type == 'daily_steps':
+                progress = sum(a.steps for a in activities)
+            elif goal.goal_type == 'active_minutes':
+                progress = sum(a.duration for a in activities)
+        
+        goal_dict = {
+            "id": goal.id,
+            "goal_type": goal.goal_type,
+            "target": goal.target,
+            "frequency": goal.frequency,
+            "user_id": goal.user_id,
+            "start_date": goal.start_date,
+            "current_progress": progress
+        }
+        response.append(goal_dict)
+        
+    return response
 
 @router.put("/{goal_id}", response_model=goal_schema.GoalResponse)
 def update_goal(goal_id: int, goal_update: goal_schema.GoalUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
