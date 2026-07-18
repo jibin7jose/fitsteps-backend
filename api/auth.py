@@ -8,7 +8,13 @@ from db.database import get_db
 from db import models
 from schemas import user as user_schema
 
+from api.dependencies import get_current_user
+
 router = APIRouter()
+
+@router.get("/me", response_model=user_schema.UserResponse)
+def get_current_user_info(current_user: models.User = Depends(get_current_user)):
+    return current_user
 
 @router.post("/register", response_model=user_schema.UserResponse)
 def register(user: user_schema.UserCreate, db: Session = Depends(get_db)):
