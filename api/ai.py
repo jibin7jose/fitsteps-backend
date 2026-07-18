@@ -12,6 +12,7 @@ from api.dependencies import get_current_user
 router = APIRouter()
 
 if not settings.GEMINI_API_KEY:
+    @router.post("/recommendation", response_model=ai_schema.AIRecommendationResponse)
     def get_recommendation(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
         return {
             "recommended_steps": 8000,
