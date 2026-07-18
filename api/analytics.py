@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from db.database import get_db
 from db import models
 from api.dependencies import get_current_user
-from sqlalchemy import func
+from sqlalchemy import func, text
 
 router = APIRouter()
 
@@ -28,7 +28,7 @@ def get_analytics(db: Session = Depends(get_db), current_user: models.User = Dep
     ).filter(
         models.Activity.user_id == current_user.id
     ).group_by(
-        'date'
+        text('date')
     ).order_by(
         func.sum(models.Activity.steps).desc()
     ).first()
@@ -61,7 +61,7 @@ def get_analytics(db: Session = Depends(get_db), current_user: models.User = Dep
     ).filter(
         models.Activity.user_id == current_user.id
     ).group_by(
-        'week'
+        text('week')
     ).order_by(
         func.sum(models.Activity.steps).desc()
     ).first()
