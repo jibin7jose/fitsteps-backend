@@ -4,9 +4,9 @@ from datetime import datetime
 
 class ActivityBase(BaseModel):
     goal_id: Optional[int] = None
-    category: str
-    steps: int = 0
-    duration: int = 0
+    category: Optional[str] = "walking"
+    steps: Optional[int] = 0
+    duration: Optional[int] = 0
     notes: Optional[str] = None
 
 class ActivityCreate(ActivityBase):
