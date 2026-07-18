@@ -28,7 +28,7 @@ def get_analytics(db: Session = Depends(get_db), current_user: models.User = Dep
     ).filter(
         models.Activity.user_id == current_user.id
     ).group_by(
-        func.date(models.Activity.activity_date)
+        'date'
     ).order_by(
         func.sum(models.Activity.steps).desc()
     ).first()
@@ -61,7 +61,7 @@ def get_analytics(db: Session = Depends(get_db), current_user: models.User = Dep
     ).filter(
         models.Activity.user_id == current_user.id
     ).group_by(
-        func.date_trunc('week', models.Activity.activity_date)
+        'week'
     ).order_by(
         func.sum(models.Activity.steps).desc()
     ).first()
